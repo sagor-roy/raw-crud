@@ -11,15 +11,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
 
     $error_message;
-    if (empty($name) || empty($roll)) {
+    if (empty($name) || empty($roll) || empty($_FILES['image']['name'])) {
         $error_message = 'input field is required';
     } else {
-        $sql = "INSERT INTO `user` (`name`,`email`,`roll`) VALUES ('$name','$email','$roll')";
-
-        if (mysqli_query($conn, $sql)) {
-            header('Location: index.php');
+        if ($_FILES['image']['error'] > 0) {
+            $error_message = 'Error: ' . $_FILES['image']['error'];
         } else {
-            echo 'something is wrong';
+            // Upload the file to the server
+            $target_dir = 'asset/uploads/';
+            $img_name = basename($_FILES['image']['name']);
+            $target_file = $target_dir . $img_name;
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+                $sql = "INSERT INTO `user` (`name`,`email`,`roll`,`image`,`created_at`) VALUES ('$name','$email','$roll','$img_name',NOW())";
+                if (mysqli_query($conn, $sql)) {
+                    header('Location: index.php');
+                } else {
+                    echo 'something is wrong';
+                }
+            } else {
+                echo 'Error uploading file.';
+            }
         }
     }
 }
@@ -41,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php echo $error_message ?>
                         </div>
                     <?php } ?>
-                    <form action="create.php" method="post">
+                    <form action="create.php" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Name</label>
                             <input type="text" name="name" class="form-control" placeholder="Enter your name">
@@ -53,6 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Email</label>
                             <input type="email" name="email" class="form-control" placeholder="Enter your email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Email</label>
+                            <input type="file" name="image" class="form-control">
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                         <a href="index.php" class="btn btn-warning">Back</a>

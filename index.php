@@ -45,9 +45,11 @@ $result = $conn->query($sql);
                             </td>
                         </tr>
                 <?php }
-                } else {
-                    echo '0 result';
-                }
+                } else {?>
+                    <tr>
+                        <td colspan="5">No result found!!</td>
+                    </tr>
+                <?php }
                 ?>
 
             </tbody>
